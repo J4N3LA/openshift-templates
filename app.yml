@@ -9,6 +9,17 @@ objects:
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
+    annotations:
+      image.openshift.io/triggers: >
+        [{
+          "from": {
+            "kind": "ImageStreamTag",
+            "name": "${IMAGESTREAM_NAME}:${IMAGESTREAM_TAG}",
+            "namespace": "${IMAGESTREAM_NAMESPACE}"
+          },
+          "fieldPath": "spec.template.spec.containers[?(@.name==\"${NAME}-pod\")].image"
+        }]
+
     labels:
       app: ${NAME}
       name: ${NAME}-deployment
@@ -90,12 +101,24 @@ parameters:
     required: true
   - name: IMAGE
     description: |
-     ImageStream/Image-Registry value. If ImageStream resides in the same namespace as NAMESPACE parameter,
-     use preferred command for deploying this template, Otherwise please use Image-Registry location.
-     (Openshift templates sucks)
+     ImageStream/Image-Registry value. 
     required: true
-    value: image-registry.openshift-image-registry.svc:5000/practice/test@sha256:6b7e4d171c890ca9a4867b5f05f4861a879bb585fae0fef29c7e4861836a6f0d
- #   value: practice/test:image-src
+ #   value: image-registry.openshift-image-registry.svc:5000/practice/test@sha256:6b7e4d171c890ca9a4867b5f05f4861a879bb585fae0fef29c7e4861836a6f0d
+    value: practice/test:image-src
   - name: DOMAIN
     description: Domain value
+    required: true
+
+# In case of using ImageStream as Image value configure these:
+  - name: IMAGESTREAM_NAME
+    value: test
+    description: ImageStream name to track
+    required: true
+  - name: IMAGESTREAM_TAG
+    value: image-src
+    description: Tag of the ImageStream to deploy
+    required: true
+  - name: IMAGESTREAM_NAMESPACE
+    value: practice
+    description: Namespace of the source ImageStream
     required: true
