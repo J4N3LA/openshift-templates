@@ -64,7 +64,7 @@ objects:
     name: ${NAME}-route
     namespace: ${NAMESPACE}
   spec:
-    host: ${HOSTNAME}
+    host: ${SUBDOMAIN}.${DOMAIN}
     port:
       targetPort: 8080
     tls:
@@ -90,6 +90,10 @@ parameters:
     description: Image stream reference for httpd from openshift-registry/exetrnal registry ( ImageStream tag will not be resolved )
     required: true
     value: image-registry.openshift-image-registry.svc:5000/practice/test@sha256:6b7e4d171c890ca9a4867b5f05f4861a879bb585fae0fef29c7e4861836a6f0d
-  - name: HOSTNAME
+  - name: SUBDOMAIN
     description: domain name for route
     required: true 
+    value: my-route
+  - name: DOMAIN
+    description: Domain value
+    required: true
