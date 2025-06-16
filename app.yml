@@ -1,0 +1,93 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: my-template
+labels:
+  app: ${NAME}
+  template: my-template
+objects:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: ${NAME}
+      name: ${NAME}-deployment
+    name: ${NAME}-deployment
+    namespace: ${NAMESPACE}
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: ${NAME}
+        deployment: ${NAME}-deployment
+    template:
+      metadata:
+        labels:
+          app: ${NAME}
+          deployment: ${NAME}-deployment
+      spec:
+        containers:
+        - image: ${IMAGE}
+          name: ${NAME}-pod
+          ports:
+          - containerPort: 8443
+            protocol: TCP
+          - containerPort: 8080
+            protocol: TCP
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ${NAME}-service
+    name: ${NAME}-service
+    namespace: ${NAMESPACE}
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: 8443-tcp
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+      deployment: ${NAME}-deployment
+    type: ClusterIP
+
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    labels:
+      app: ${NAME}-route
+    name: ${NAME}-route
+    namespace: ${NAMESPACE}
+  spec:
+    host: myroute.apps.lunatic.ol.ge
+    port:
+      targetPort: 8080
+    tls:
+      insecureEdgeTerminationPolicy: Allow
+      termination: edge
+    to:
+      kind: Service
+      name: ${NAME}-service
+      weight: 100
+    wildcardPolicy: None
+
+
+parameters:
+  - name: NAME
+    value: template
+    description: Value that will be used as part of resources' name
+    required: true
+  - name: NAMESPACE
+    value: practice-template
+    description: Namespace where the app will be deployed
+    required: true
+  - name: IMAGE
+    description: Image stream reference for httpd from openshift-registry/exetrnal registry ( ImageStream tag will not be resolved )
+    required: true
+    value: image-registry.openshift-image-registry.svc:5000/practice/test@sha256:6b7e4d171c890ca9a4867b5f05f4861a879bb585fae0fef29c7e4861836a6f0d
+    
