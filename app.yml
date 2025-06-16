@@ -22,6 +22,8 @@ objects:
         deployment: ${NAME}-deployment
     template:
       metadata:
+        annotations:
+          alpha.image.policy.openshift.io/resolve-names: '*'
         labels:
           app: ${NAME}
           deployment: ${NAME}-deployment
@@ -64,7 +66,7 @@ objects:
     name: ${NAME}-route
     namespace: ${NAMESPACE}
   spec:
-    host: ${SUBDOMAIN}.${DOMAIN}
+    host: ${NAMESPACE}.${DOMAIN}
     port:
       targetPort: 8080
     tls:
@@ -87,13 +89,13 @@ parameters:
     description: Namespace where the app will be deployed
     required: true
   - name: IMAGE
-    description: Image stream reference for httpd from openshift-registry/exetrnal registry ( ImageStream tag will not be resolved )
+    description: |
+     ImageStream/Image-Registry value. If ImageStream resides in the same namespace as NAMESPACE parameter,
+     use preferred command for deploying this template, Otherwise please use Image-Registry location.
+     (Openshift templates sucks)
     required: true
     value: image-registry.openshift-image-registry.svc:5000/practice/test@sha256:6b7e4d171c890ca9a4867b5f05f4861a879bb585fae0fef29c7e4861836a6f0d
-  - name: SUBDOMAIN
-    description: domain name for route
-    required: true 
-    value: my-route
+ #   value: practice/test:image-src
   - name: DOMAIN
     description: Domain value
     required: true
